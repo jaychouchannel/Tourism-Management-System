@@ -34,7 +34,7 @@ import com.service.ConfigService;
 import com.utils.BaiduUtil;
 import com.utils.FileUtil;
 import com.utils.R;
-import com.utils.CommonUtil;
+import com.utils.SqlIdentifierValidator;
 /**
  * 通用接口
  */
@@ -56,6 +56,10 @@ public class CommonController{
 	@IgnoreAuth
 	@RequestMapping("/option/{tableName}/{columnName}")
 	public R getOption(@PathVariable("tableName") String tableName, @PathVariable("columnName") String columnName,@RequestParam(required = false) String conditionColumn,@RequestParam(required = false) String conditionValue,String level,String parent) {
+		SqlIdentifierValidator.validateOptionColumn(tableName, columnName);
+		if(StringUtils.isNotBlank(conditionColumn)) {
+			SqlIdentifierValidator.validateColumn(tableName, conditionColumn);
+		}
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("table", tableName);
 		params.put("column", columnName);
@@ -84,6 +88,8 @@ public class CommonController{
 	@IgnoreAuth
 	@RequestMapping("/follow/{tableName}/{columnName}")
 	public R getFollowByOption(@PathVariable("tableName") String tableName, @PathVariable("columnName") String columnName, @RequestParam String columnValue) {
+		SqlIdentifierValidator.validateTable(tableName);
+		SqlIdentifierValidator.validateColumn(tableName, columnName);
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("table", tableName);
 		params.put("column", columnName);
@@ -100,6 +106,7 @@ public class CommonController{
 	 */
 	@RequestMapping("/sh/{tableName}")
 	public R sh(@PathVariable("tableName") String tableName, @RequestBody Map<String, Object> map) {
+		SqlIdentifierValidator.validateTable(tableName);
 		map.put("table", tableName);
 		commonService.sh(map);
 		return R.ok();
@@ -115,8 +122,10 @@ public class CommonController{
 	 */
 	@IgnoreAuth
 	@RequestMapping("/remind/{tableName}/{columnName}/{type}")
-	public R remindCount(@PathVariable("tableName") String tableName, @PathVariable("columnName") String columnName, 
+	public R remindCount(@PathVariable("tableName") String tableName, @PathVariable("columnName") String columnName,
 						 @PathVariable("type") String type,@RequestParam Map<String, Object> map) {
+		SqlIdentifierValidator.validateTable(tableName);
+		SqlIdentifierValidator.validateColumn(tableName, columnName);
 		map.put("table", tableName);
 		map.put("column", columnName);
 		map.put("type", type);
@@ -152,6 +161,8 @@ public class CommonController{
 	@IgnoreAuth
 	@RequestMapping("/cal/{tableName}/{columnName}")
 	public R cal(@PathVariable("tableName") String tableName, @PathVariable("columnName") String columnName) {
+		SqlIdentifierValidator.validateTable(tableName);
+		SqlIdentifierValidator.validateColumn(tableName, columnName);
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("table", tableName);
 		params.put("column", columnName);
@@ -165,6 +176,8 @@ public class CommonController{
 	@IgnoreAuth
 	@RequestMapping("/group/{tableName}/{columnName}")
 	public R group(@PathVariable("tableName") String tableName, @PathVariable("columnName") String columnName) {
+		SqlIdentifierValidator.validateTable(tableName);
+		SqlIdentifierValidator.validateColumn(tableName, columnName);
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("table", tableName);
 		params.put("column", columnName);
@@ -186,6 +199,9 @@ public class CommonController{
 	@IgnoreAuth
 	@RequestMapping("/value/{tableName}/{xColumnName}/{yColumnName}")
 	public R value(@PathVariable("tableName") String tableName, @PathVariable("yColumnName") String yColumnName, @PathVariable("xColumnName") String xColumnName) {
+		SqlIdentifierValidator.validateTable(tableName);
+		SqlIdentifierValidator.validateColumn(tableName, xColumnName);
+		SqlIdentifierValidator.validateColumn(tableName, yColumnName);
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("table", tableName);
 		params.put("xColumn", xColumnName);
@@ -208,6 +224,9 @@ public class CommonController{
 	@IgnoreAuth
 	@RequestMapping("/value/{tableName}/{xColumnName}/{yColumnName}/{timeStatType}")
 	public R valueDay(@PathVariable("tableName") String tableName, @PathVariable("yColumnName") String yColumnName, @PathVariable("xColumnName") String xColumnName, @PathVariable("timeStatType") String timeStatType) {
+		SqlIdentifierValidator.validateTable(tableName);
+		SqlIdentifierValidator.validateColumn(tableName, xColumnName);
+		SqlIdentifierValidator.validateColumn(tableName, yColumnName);
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("table", tableName);
 		params.put("xColumn", xColumnName);
