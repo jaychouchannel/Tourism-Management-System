@@ -85,16 +85,24 @@ public class UsersController{
 	/**
      * 密码重置
      */
-    @IgnoreAuth
 	@RequestMapping(value = "/resetPass")
     public R resetPass(String username, HttpServletRequest request){
+    	Long userId = (Long) request.getSession().getAttribute("userId");
+    	if (userId == null) {
+    		return R.error(401, "请先登录");
+    	}
+    	String currentUsername = (String) request.getSession().getAttribute("username");
+    	if (!username.equals(currentUsername)) {
+    		return R.error("只能重置本人密码");
+    	}
     	UsersEntity user = userService.selectOne(new EntityWrapper<UsersEntity>().eq("username", username));
     	if(user==null) {
     		return R.error("账号不存在");
     	}
-    	user.setPassword("123456");
-        userService.update(user,null);
-        return R.ok("密码已重置为：123456");
+    	String newPassword = java.util.UUID.randomUUID().toString().substring(0, 8);
+    	user.setPassword(newPassword);
+        userService.updateById(user);
+        return R.ok("密码已重置");
     }
 	
 	/**

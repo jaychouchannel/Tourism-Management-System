@@ -42,8 +42,8 @@ import java.io.IOException;
 /**
  * 导游
  * 后端接口
- * @author 
- * @email 
+ * @author
+ * @email
  * @date 2024-02-25 14:46:55
  */
 @RestController
@@ -52,24 +52,20 @@ public class DaoyouController {
     @Autowired
     private DaoyouService daoyouService;
 
+    @Autowired
+    private TokenService tokenService;
 
-
-
-    
-	@Autowired
-	private TokenService tokenService;
-	
-	/**
-	 * 登录
-	 */
-	@IgnoreAuth
-	@RequestMapping(value = "/login")
-	public R login(String username, String password, String captcha, HttpServletRequest request) {
-		DaoyouEntity u = daoyouService.selectOne(new EntityWrapper<DaoyouEntity>().eq("daoyougonghao", username));
+    /**
+     * 登录
+     */
+    @IgnoreAuth
+    @RequestMapping(value = "/login")
+    public R login(String username, String password, String captcha, HttpServletRequest request) {
+        DaoyouEntity u = daoyouService.selectOne(new EntityWrapper<DaoyouEntity>().eq("daoyougonghao", username));
         if(u!=null && u.getStatus().intValue()==1) {
             return R.error("账号已锁定，请联系管理员。");
         }
-		if(u==null || !u.getMima().equals(password)) {
+        if(u==null || !u.getMima().equals(password)) {
             if(u!=null) {
                 u.setPasswordwrongnum(u.getPasswordwrongnum()+1);
                 if(u.getPasswordwrongnum()>=3) {
@@ -77,118 +73,118 @@ public class DaoyouController {
                 }
                 daoyouService.updateById(u);
             }
-			return R.error("账号或密码不正确");
-		}
-		
-		String token = tokenService.generateToken(u.getId(), username,"daoyou",  "导游" );
-		return R.ok().put("token", token);
-	}
+            return R.error("账号或密码不正确");
+        }
 
+        String token = tokenService.generateToken(u.getId(), username,"daoyou",  "导游" );
+        return R.ok().put("token", token);
+    }
 
-	
-	/**
+    /**
      * 注册
      */
-	@IgnoreAuth
+    @IgnoreAuth
     @RequestMapping("/register")
     public R register(@RequestBody DaoyouEntity daoyou){
-    	//ValidatorUtils.validateEntity(daoyou);
-    	DaoyouEntity u = daoyouService.selectOne(new EntityWrapper<DaoyouEntity>().eq("daoyougonghao", daoyou.getDaoyougonghao()));
-		if(u!=null) {
-			return R.error("注册用户已存在");
-		}
-		Long uId = new Date().getTime();
-		daoyou.setId(uId);
+        DaoyouEntity u = daoyouService.selectOne(new EntityWrapper<DaoyouEntity>().eq("daoyougonghao", daoyou.getDaoyougonghao()));
+        if(u!=null) {
+            return R.error("注册用户已存在");
+        }
+        Long uId = new Date().getTime();
+        daoyou.setId(uId);
         daoyouService.insert(daoyou);
         return R.ok();
     }
 
-	
-	/**
-	 * 退出
-	 */
-	@RequestMapping("/logout")
-	public R logout(HttpServletRequest request) {
-		request.getSession().invalidate();
-		return R.ok("退出成功");
-	}
-	
-	/**
+    /**
+     * 退出
+     */
+    @RequestMapping("/logout")
+    public R logout(HttpServletRequest request) {
+        request.getSession().invalidate();
+        return R.ok("退出成功");
+    }
+
+    /**
      * 获取用户的session用户信息
      */
     @RequestMapping("/session")
     public R getCurrUser(HttpServletRequest request){
-    	Long id = (Long)request.getSession().getAttribute("userId");
+        Long id = (Long)request.getSession().getAttribute("userId");
         DaoyouEntity u = daoyouService.selectById(id);
         return R.ok().put("data", u);
     }
-    
+
     /**
      * 密码重置
      */
-    @IgnoreAuth
-	@RequestMapping(value = "/resetPass")
+    @RequestMapping(value = "/resetPass")
     public R resetPass(String username, HttpServletRequest request){
-    	DaoyouEntity u = daoyouService.selectOne(new EntityWrapper<DaoyouEntity>().eq("daoyougonghao", username));
-    	if(u==null) {
-    		return R.error("账号不存在");
-    	}
-        u.setMima("123456");
+        Long userId = (Long) request.getSession().getAttribute("userId");
+        if (userId == null) {
+            return R.error(401, "请先登录");
+        }
+        String currentUsername = (String) request.getSession().getAttribute("username");
+        if (!username.equals(currentUsername)) {
+            return R.error("只能重置本人密码");
+        }
+        DaoyouEntity u = daoyouService.selectOne(new EntityWrapper<DaoyouEntity>().eq("daoyougonghao", username));
+        if(u==null) {
+            return R.error("账号不存在");
+        }
+        String newPassword = java.util.UUID.randomUUID().toString().substring(0, 8);
+        u.setMima(newPassword);
         daoyouService.updateById(u);
-        return R.ok("密码已重置为：123456");
+        return R.ok("密码已重置");
     }
-
-
 
     /**
      * 后端列表
      */
     @RequestMapping("/page")
     public R page(@RequestParam Map<String, Object> params,DaoyouEntity daoyou,
-		HttpServletRequest request){
+        HttpServletRequest request){
         EntityWrapper<DaoyouEntity> ew = new EntityWrapper<DaoyouEntity>();
 
-		PageUtils page = daoyouService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, daoyou), params), params));
+        PageUtils page = daoyouService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, daoyou), params), params));
 
         return R.ok().put("data", page);
     }
-    
+
     /**
      * 前端列表
      */
-	@IgnoreAuth
+    @IgnoreAuth
     @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params,DaoyouEntity daoyou, 
-		HttpServletRequest request){
+    public R list(@RequestParam Map<String, Object> params,DaoyouEntity daoyou,
+        HttpServletRequest request){
         EntityWrapper<DaoyouEntity> ew = new EntityWrapper<DaoyouEntity>();
 
-		PageUtils page = daoyouService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, daoyou), params), params));
+        PageUtils page = daoyouService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(ew, daoyou), params), params));
         return R.ok().put("data", page);
     }
 
-
-
-	/**
+    /**
      * 列表
      */
     @RequestMapping("/lists")
     public R list( DaoyouEntity daoyou){
-       	EntityWrapper<DaoyouEntity> ew = new EntityWrapper<DaoyouEntity>();
-      	ew.allEq(MPUtil.allEQMapPre( daoyou, "daoyou")); 
+        EntityWrapper<DaoyouEntity> ew = new EntityWrapper<DaoyouEntity>();
+        ew.allEq(MPUtil.allEQMapPre( daoyou, "daoyou"));
         return R.ok().put("data", daoyouService.selectListView(ew));
     }
 
-	 /**
+    /**
      * 查询
      */
     @RequestMapping("/query")
     public R query(DaoyouEntity daoyou){
         EntityWrapper< DaoyouEntity> ew = new EntityWrapper< DaoyouEntity>();
- 		ew.allEq(MPUtil.allEQMapPre( daoyou, "daoyou")); 
-		DaoyouView daoyouView =  daoyouService.selectView(ew);
-		return R.ok("查询导游成功").put("data", daoyouView);
+        ew.allEq(MPUtil.allEQMapPre( daoyou, "daoyou"));
+        DaoyouView daoyouView =  daoyouService.selectView(ew);
+        return R.ok("查询导游成功").put("data", daoyouView);
     }
-	
+
     /**
      * 后端详情
      */
@@ -201,15 +197,12 @@ public class DaoyouController {
     /**
      * 前端详情
      */
-	@IgnoreAuth
+    @IgnoreAuth
     @RequestMapping("/detail/{id}")
     public R detail(@PathVariable("id") Long id){
         DaoyouEntity daoyou = daoyouService.selectById(id);
         return R.ok().put("data", daoyou);
     }
-    
-
-
 
     /**
      * 后端保存
@@ -219,17 +212,16 @@ public class DaoyouController {
         if(daoyouService.selectCount(new EntityWrapper<DaoyouEntity>().eq("daoyougonghao", daoyou.getDaoyougonghao()))>0) {
             return R.error("导游工号已存在");
         }
-    	daoyou.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(daoyou);
-    	DaoyouEntity u = daoyouService.selectOne(new EntityWrapper<DaoyouEntity>().eq("daoyougonghao", daoyou.getDaoyougonghao()));
-		if(u!=null) {
-			return R.error("用户已存在");
-		}
-		daoyou.setId(new Date().getTime());
+        daoyou.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
+        DaoyouEntity u = daoyouService.selectOne(new EntityWrapper<DaoyouEntity>().eq("daoyougonghao", daoyou.getDaoyougonghao()));
+        if(u!=null) {
+            return R.error("用户已存在");
+        }
+        daoyou.setId(new Date().getTime());
         daoyouService.insert(daoyou);
         return R.ok();
     }
-    
+
     /**
      * 前端保存
      */
@@ -238,20 +230,15 @@ public class DaoyouController {
         if(daoyouService.selectCount(new EntityWrapper<DaoyouEntity>().eq("daoyougonghao", daoyou.getDaoyougonghao()))>0) {
             return R.error("导游工号已存在");
         }
-    	daoyou.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
-    	//ValidatorUtils.validateEntity(daoyou);
-    	DaoyouEntity u = daoyouService.selectOne(new EntityWrapper<DaoyouEntity>().eq("daoyougonghao", daoyou.getDaoyougonghao()));
-		if(u!=null) {
-			return R.error("用户已存在");
-		}
-		daoyou.setId(new Date().getTime());
+        daoyou.setId(new Date().getTime()+new Double(Math.floor(Math.random()*1000)).longValue());
+        DaoyouEntity u = daoyouService.selectOne(new EntityWrapper<DaoyouEntity>().eq("daoyougonghao", daoyou.getDaoyougonghao()));
+        if(u!=null) {
+            return R.error("用户已存在");
+        }
+        daoyou.setId(new Date().getTime());
         daoyouService.insert(daoyou);
         return R.ok();
     }
-
-
-
-
 
     /**
      * 修改
@@ -259,17 +246,12 @@ public class DaoyouController {
     @RequestMapping("/update")
     @Transactional
     public R update(@RequestBody DaoyouEntity daoyou, HttpServletRequest request){
-        //ValidatorUtils.validateEntity(daoyou);
         if(daoyouService.selectCount(new EntityWrapper<DaoyouEntity>().ne("id", daoyou.getId()).eq("daoyougonghao", daoyou.getDaoyougonghao()))>0) {
             return R.error("导游工号已存在");
         }
         daoyouService.updateById(daoyou);//全部更新
         return R.ok();
     }
-
-
-
-    
 
     /**
      * 删除
@@ -279,16 +261,4 @@ public class DaoyouController {
         daoyouService.deleteBatchIds(Arrays.asList(ids));
         return R.ok();
     }
-    
-	
-
-
-
-
-
-
-
-
-
-
 }
