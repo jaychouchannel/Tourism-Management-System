@@ -172,7 +172,6 @@ public class StoreupController {
      */
     @RequestMapping("/update")
     @Transactional
-    @IgnoreAuth
     public R update(@RequestBody StoreupEntity storeup, HttpServletRequest request){
         //ValidatorUtils.validateEntity(storeup);
         storeupService.updateById(storeup);//全部更新

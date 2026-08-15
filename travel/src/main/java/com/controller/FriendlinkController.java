@@ -168,7 +168,6 @@ public class FriendlinkController {
      */
     @RequestMapping("/update")
     @Transactional
-    @IgnoreAuth
     public R update(@RequestBody FriendlinkEntity friendlink, HttpServletRequest request){
         //ValidatorUtils.validateEntity(friendlink);
         friendlinkService.updateById(friendlink);//全部更新

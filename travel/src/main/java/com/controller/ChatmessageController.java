@@ -179,7 +179,6 @@ public class ChatmessageController {
      */
     @RequestMapping("/update")
     @Transactional
-    @IgnoreAuth
     public R update(@RequestBody ChatmessageEntity chatmessage, HttpServletRequest request){
         //ValidatorUtils.validateEntity(chatmessage);
         chatmessageService.updateById(chatmessage);//全部更新
