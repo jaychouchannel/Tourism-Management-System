@@ -199,7 +199,6 @@ public class ForumController {
      */
     @RequestMapping("/update")
     @Transactional
-    @IgnoreAuth
     public R update(@RequestBody ForumEntity forum, HttpServletRequest request){
         //ValidatorUtils.validateEntity(forum);
         forumService.updateById(forum);//全部更新

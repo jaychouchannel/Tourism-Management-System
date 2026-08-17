@@ -168,7 +168,6 @@ public class NewstypeController {
      */
     @RequestMapping("/update")
     @Transactional
-    @IgnoreAuth
     public R update(@RequestBody NewstypeEntity newstype, HttpServletRequest request){
         //ValidatorUtils.validateEntity(newstype);
         newstypeService.updateById(newstype);//全部更新

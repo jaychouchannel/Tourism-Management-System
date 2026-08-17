@@ -194,7 +194,6 @@ public class NewsController {
      */
     @RequestMapping("/update")
     @Transactional
-    @IgnoreAuth
     public R update(@RequestBody NewsEntity news, HttpServletRequest request){
         //ValidatorUtils.validateEntity(news);
         newsService.updateById(news);//全部更新

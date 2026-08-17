@@ -168,7 +168,6 @@ public class DiscussmeishicantingController {
      */
     @RequestMapping("/update")
     @Transactional
-    @IgnoreAuth
     public R update(@RequestBody DiscussmeishicantingEntity discussmeishicanting, HttpServletRequest request){
         //ValidatorUtils.validateEntity(discussmeishicanting);
         discussmeishicantingService.updateById(discussmeishicanting);//全部更新

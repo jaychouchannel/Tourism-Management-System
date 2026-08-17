@@ -168,7 +168,6 @@ public class DiscusslvyouxianluController {
      */
     @RequestMapping("/update")
     @Transactional
-    @IgnoreAuth
     public R update(@RequestBody DiscusslvyouxianluEntity discusslvyouxianlu, HttpServletRequest request){
         //ValidatorUtils.validateEntity(discusslvyouxianlu);
         discusslvyouxianluService.updateById(discusslvyouxianlu);//全部更新

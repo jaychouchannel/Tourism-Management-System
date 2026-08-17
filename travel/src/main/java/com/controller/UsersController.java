@@ -69,6 +69,8 @@ public class UsersController{
     	if(userService.selectOne(new EntityWrapper<UsersEntity>().eq("username", user.getUsername())) !=null) {
     		return R.error("用户已存在");
     	}
+    	// 安全修复(#10)：公开注册强制为普通用户角色，禁止通过数据库默认值('管理员')创建管理员账户
+    	user.setRole("用户");
         userService.insert(user);
         return R.ok();
     }

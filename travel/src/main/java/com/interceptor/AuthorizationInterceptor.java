@@ -71,6 +71,15 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
         }
         
         if(tokenEntity != null) {
+        	// 授权检查(#12)：用户管理 CRUD 端点仅允许管理员角色访问
+        	if (isAdminManagementEndpoint(request.getRequestURI()) && !"管理员".equals(tokenEntity.getRole())) {
+        		response.setCharacterEncoding("UTF-8");
+        		response.setContentType("application/json; charset=utf-8");
+        		PrintWriter out = response.getWriter();
+        		out.print(JSONObject.toJSONString(R.error(403, "无权限访问")));
+        		out.close();
+        		return false;
+        	}
         	request.getSession().setAttribute("userId", tokenEntity.getUserid());
         	request.getSession().setAttribute("role", tokenEntity.getRole());
         	request.getSession().setAttribute("tableName", tokenEntity.getTablename());
@@ -91,5 +100,21 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 		}
 //				throw new EIException("请先登录", 401);
 		return false;
+    }
+
+    /**
+     * 判断请求是否为用户管理模块中仅限管理员访问的 CRUD 端点。
+     * login/register 已由 @IgnoreAuth 放行，logout/resetPass/session 属于登录用户自身操作，不受此限制。
+     */
+    private boolean isAdminManagementEndpoint(String uri) {
+        if (uri == null || !uri.contains("/users/")) {
+            return false;
+        }
+        return uri.endsWith("/users/page")
+            || uri.endsWith("/users/list")
+            || uri.endsWith("/users/save")
+            || uri.endsWith("/users/update")
+            || uri.endsWith("/users/delete")
+            || uri.contains("/users/info/");
     }
 }
