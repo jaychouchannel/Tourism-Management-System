@@ -88,7 +88,7 @@ public class UsersController{
      * 密码重置
      */
 	@RequestMapping(value = "/resetPass")
-    public R resetPass(String username, HttpServletRequest request){
+    public R resetPass(String username, String oldPassword, String newPassword, HttpServletRequest request){
     	Long userId = (Long) request.getSession().getAttribute("userId");
     	if (userId == null) {
     		return R.error(401, "请先登录");
@@ -101,10 +101,15 @@ public class UsersController{
     	if(user==null) {
     		return R.error("账号不存在");
     	}
-    	String newPassword = java.util.UUID.randomUUID().toString().substring(0, 8);
+    	if(oldPassword == null || !user.getPassword().equals(oldPassword)) {
+    		return R.error("原密码不正确");
+    	}
+    	if(newPassword == null || newPassword.length() < 6) {
+    		return R.error("新密码长度不能少于6位");
+    	}
     	user.setPassword(newPassword);
         userService.updateById(user);
-        return R.ok("密码已重置");
+        return R.ok("密码修改成功");
     }
 	
 	/**
